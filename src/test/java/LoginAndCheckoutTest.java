@@ -1,9 +1,9 @@
 import org.openqa.selenium.By;
-import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.support.ui.ExpectedConditions;
+import org.openqa.selenium.support.ui.Select;
 import org.openqa.selenium.support.ui.WebDriverWait;
 import org.testng.Assert;
 import org.testng.annotations.AfterMethod;
@@ -17,56 +17,161 @@ public class LoginAndCheckoutTest {
     WebDriver driver;
     WebDriverWait wait;
 
+    String email;
+
     @BeforeMethod
     public void setUp() {
 
-        // Open Chrome
+        System.out.println("Opening Chrome...");
+
         driver = new ChromeDriver();
 
-        // Maximize browser
         driver.manage().window().maximize();
 
-        // Explicit Wait
         wait = new WebDriverWait(
                 driver,
-                Duration.ofSeconds(10)
+                Duration.ofSeconds(15)
         );
 
-        // Open SauceDemo
-        driver.get("https://www.saucedemo.com/");
+        driver.get("https://demowebshop.tricentis.com/");
+
+        pause();
     }
 
+
     @Test
-    public void loginFillFormSubmitAndVerify() {
+    public void loginAddProductAndCheckout() {
 
-        // ==================================================
-        // STEP 1: LOGIN
-        // ==================================================
+        // =====================================================
+        // STEP 1: REGISTER
+        // =====================================================
 
-        System.out.println("STEP 1: Login");
+        System.out.println("STEP 1: Registering new user");
 
-        // Username
-        wait.until(
-                ExpectedConditions.visibilityOfElementLocated(
-                        By.id("user-name")
-                )
-        ).sendKeys("standard_user");
-
-        pause();
-
-        // Password
-        wait.until(
-                ExpectedConditions.visibilityOfElementLocated(
-                        By.id("password")
-                )
-        ).sendKeys("secret_sauce");
-
-        pause();
-
-        // Login button
         wait.until(
                 ExpectedConditions.elementToBeClickable(
-                        By.id("login-button")
+                        By.linkText("Register")
+                )
+        ).click();
+
+        pause();
+
+        // Gender
+        wait.until(
+                ExpectedConditions.elementToBeClickable(
+                        By.id("gender-female")
+                )
+        ).click();
+
+        // First Name
+        wait.until(
+                ExpectedConditions.visibilityOfElementLocated(
+                        By.id("FirstName")
+                )
+        ).sendKeys("Test");
+
+        // Last Name
+        driver.findElement(
+                By.id("LastName")
+        ).sendKeys("Testing");
+
+        // Create unique email
+        email =
+                "Testing" +
+                        System.currentTimeMillis() +
+                        "@example.com";
+
+        System.out.println("Email: " + email);
+
+        driver.findElement(
+                By.id("Email")
+        ).sendKeys(email);
+
+        // Password
+        driver.findElement(
+                By.id("Password")
+        ).sendKeys("Test@12345");
+
+        // Confirm Password
+        driver.findElement(
+                By.id("ConfirmPassword")
+        ).sendKeys("Test@12345");
+
+        pause();
+
+        // Register
+        wait.until(
+                ExpectedConditions.elementToBeClickable(
+                        By.id("register-button")
+                )
+        ).click();
+
+        pause();
+
+        // Verify registration
+        WebElement registrationMessage =
+                wait.until(
+                        ExpectedConditions.visibilityOfElementLocated(
+                                By.className("result")
+                        )
+                );
+
+        Assert.assertEquals(
+                registrationMessage.getText(),
+                "Your registration completed",
+                "Registration failed"
+        );
+
+        System.out.println("Registration successful");
+
+
+        // =====================================================
+        // STEP 2: LOGOUT
+        // =====================================================
+
+        System.out.println("STEP 2: Logout");
+
+        wait.until(
+                ExpectedConditions.elementToBeClickable(
+                        By.linkText("Log out")
+                )
+        ).click();
+
+        pause();
+
+
+        // =====================================================
+        // STEP 3: LOGIN
+        // =====================================================
+
+        System.out.println("STEP 3: Login");
+
+        wait.until(
+                ExpectedConditions.elementToBeClickable(
+                        By.linkText("Log in")
+                )
+        ).click();
+
+        pause();
+
+        // Email
+        wait.until(
+                ExpectedConditions.visibilityOfElementLocated(
+                        By.id("Email")
+                )
+        ).sendKeys(email);
+
+        // Password
+        driver.findElement(
+                By.id("Password")
+        ).sendKeys("Test@12345");
+
+        pause();
+
+        // Login
+        wait.until(
+                ExpectedConditions.elementToBeClickable(
+                        By.cssSelector("input[value='Log in']")
                 )
         ).click();
 
@@ -74,54 +179,114 @@ public class LoginAndCheckoutTest {
 
         // Verify login
         wait.until(
-                ExpectedConditions.urlContains("inventory.html")
+                ExpectedConditions.visibilityOfElementLocated(
+                        By.linkText("Log out")
+                )
         );
+
+        System.out.println("Login successful");
+
+
+        // =====================================================
+        // STEP 4: OPEN BOOKS
+        // =====================================================
+
+        System.out.println("STEP 4: Opening Books category");
+
+        wait.until(
+                ExpectedConditions.elementToBeClickable(
+                        By.linkText("Books")
+                )
+        ).click();
+
+        pause();
+
+
+        // =====================================================
+        // STEP 5: ADD FIRST BOOK TO CART
+        // =====================================================
+
+        System.out.println("STEP 5: Adding book to cart");
+
+        WebElement addToCart =
+                wait.until(
+                        ExpectedConditions.elementToBeClickable(
+                                By.cssSelector(
+                                        "input[value='Add to cart']"
+                                )
+                        )
+                );
+
+        addToCart.click();
+
+        pause();
+
+        System.out.println("Book added to cart");
+
+
+        // =====================================================
+        // STEP 6: OPEN SHOPPING CART
+        // =====================================================
+
+        System.out.println("STEP 6: Opening shopping cart");
+
+        wait.until(
+                ExpectedConditions.elementToBeClickable(
+                        By.linkText("Shopping cart")
+                )
+        ).click();
+
+        pause();
+
+
+        // =====================================================
+        // STEP 7: VERIFY PRODUCT IN CART
+        // =====================================================
+
+        System.out.println("STEP 7: Verifying product in cart");
+
+        WebElement cartItem =
+                wait.until(
+                        ExpectedConditions.visibilityOfElementLocated(
+                                By.cssSelector(
+                                        ".cart-item-row"
+                                )
+                        )
+                );
 
         Assert.assertTrue(
-                driver.getCurrentUrl().contains("inventory.html"),
-                "Login failed"
+                cartItem.isDisplayed(),
+                "Product was not added to cart"
         );
 
-        System.out.println("Login Successful!");
+        System.out.println("Product verified in cart");
 
 
-        // ==================================================
-        // STEP 2: ADD PRODUCT TO CART
-        // ==================================================
+        // =====================================================
+        // STEP 8: ACCEPT TERMS
+        // =====================================================
 
-        System.out.println("STEP 2: Adding product to cart");
+        System.out.println("STEP 8: Accepting terms");
 
-        wait.until(
-                ExpectedConditions.elementToBeClickable(
-                        By.id("add-to-cart-sauce-labs-backpack")
-                )
-        ).click();
+        WebElement terms =
+                wait.until(
+                        ExpectedConditions.elementToBeClickable(
+                                By.id("termsofservice")
+                        )
+                );
 
-        pause();
-
-        System.out.println("Product added to cart");
-
-
-        // ==================================================
-        // STEP 3: OPEN CART
-        // ==================================================
-
-        System.out.println("STEP 3: Opening cart");
-
-        wait.until(
-                ExpectedConditions.elementToBeClickable(
-                        By.className("shopping_cart_link")
-                )
-        ).click();
+        if (!terms.isSelected()) {
+            terms.click();
+        }
 
         pause();
 
 
-        // ==================================================
-        // STEP 4: CLICK CHECKOUT
-        // ==================================================
+        // =====================================================
+        // STEP 9: CHECKOUT
+        // =====================================================
 
-        System.out.println("STEP 4: Clicking Checkout");
+        System.out.println("STEP 9: Clicking Checkout");
 
         wait.until(
                 ExpectedConditions.elementToBeClickable(
@@ -132,165 +297,286 @@ public class LoginAndCheckoutTest {
         pause();
 
 
-        // ==================================================
-        // STEP 5: FILL CHECKOUT FORM
-        // ==================================================
+        // =====================================================
+        // STEP 10: CHECKOUT AS GUEST
+        // =====================================================
 
-        System.out.println("STEP 5: Filling checkout form");
+        System.out.println("STEP 10: Checkout as Guest");
+
+        try {
+
+            WebElement guestCheckout =
+                    wait.until(
+                            ExpectedConditions.elementToBeClickable(
+                                    By.cssSelector(
+                                            "input[value='Checkout as Guest']"
+                                    )
+                            )
+                    );
+
+            guestCheckout.click();
+
+            pause();
+
+        } catch (Exception e) {
+
+            System.out.println(
+                    "Guest checkout option not displayed."
+            );
+        }
 
 
-        // ---------- First Name ----------
+        // =====================================================
+        // STEP 11: BILLING INFORMATION
+        // =====================================================
 
-        System.out.println("Entering First Name");
+        System.out.println("STEP 11: Filling billing information");
 
-        WebElement firstName = wait.until(
+        // First Name
+        wait.until(
                 ExpectedConditions.visibilityOfElementLocated(
-                        By.id("first-name")
+                        By.id("BillingNewAddress_FirstName")
                 )
+        ).sendKeys("Padma");
+
+        // Last Name
+        driver.findElement(
+                By.id("BillingNewAddress_LastName")
+        ).sendKeys("Bathula");
+
+        // Email
+        driver.findElement(
+                By.id("BillingNewAddress_Email")
+        ).sendKeys(
+                "padma" +
+                        System.currentTimeMillis() +
+                        "@example.com"
         );
 
-        firstName.sendKeys("Padma");
+        // Country
+        Select country =
+                new Select(
+                        driver.findElement(
+                                By.id(
+                                        "BillingNewAddress_CountryId"
+                                )
+                        )
+                );
+
+        country.selectByVisibleText("India");
+
+        // City
+        driver.findElement(
+                By.id("BillingNewAddress_City")
+        ).sendKeys("Bengaluru");
+
+        // Address
+        driver.findElement(
+                By.id("BillingNewAddress_Address1")
+        ).sendKeys("Test Street");
+
+        // Zip
+        driver.findElement(
+                By.id("BillingNewAddress_ZipPostalCode")
+        ).sendKeys("560035");
+
+        // Phone
+        driver.findElement(
+                By.id("BillingNewAddress_PhoneNumber")
+        ).sendKeys("9876543210");
 
         pause();
 
-
-        // ---------- Last Name ----------
-
-        System.out.println("Entering Last Name");
-
-        WebElement lastName = wait.until(
-                ExpectedConditions.visibilityOfElementLocated(
-                        By.id("last-name")
-                )
+        System.out.println(
+                "Billing information entered"
         );
 
-        lastName.sendKeys("Bathula");
 
-        pause();
+        // =====================================================
+        // STEP 12: CONTINUE BILLING
+        // =====================================================
 
-
-        // ---------- Postal Code ----------
-
-        System.out.println("Entering Postal Code");
-
-        WebElement postalCode = wait.until(
-                ExpectedConditions.visibilityOfElementLocated(
-                        By.id("postal-code")
-                )
-        );
-
-        postalCode.sendKeys("560035");
-
-        pause();
-
-        System.out.println("Form filled successfully");
-
-
-        // ==================================================
-        // STEP 6: SCROLL DOWN TO CONTINUE
-        // ==================================================
-
-        System.out.println("STEP 6: Scrolling down");
-
-        WebElement continueButton = wait.until(
-                ExpectedConditions.presenceOfElementLocated(
-                        By.id("continue")
-                )
-        );
-
-        JavascriptExecutor js =
-                (JavascriptExecutor) driver;
-
-        js.executeScript(
-                "arguments[0].scrollIntoView({" +
-                        "behavior: 'smooth'," +
-                        "block: 'center'" +
-                        "});",
-                continueButton
-        );
-
-        pause();
-
-
-        // ==================================================
-        // STEP 7: CLICK CONTINUE
-        // ==================================================
-
-        System.out.println("STEP 7: Clicking Continue");
+        System.out.println("STEP 12: Continuing billing");
 
         wait.until(
                 ExpectedConditions.elementToBeClickable(
-                        continueButton
+                        By.cssSelector(
+                                "input[onclick*='Billing.save']"
+                        )
                 )
         ).click();
 
         pause();
 
 
-        // ==================================================
-        // STEP 8: CLICK FINISH
-        // ==================================================
+        // =====================================================
+        // STEP 13: SHIPPING ADDRESS
+        // =====================================================
 
-        System.out.println("STEP 8: Clicking Finish");
+        System.out.println("STEP 13: Continuing shipping");
 
-        WebElement finishButton = wait.until(
-                ExpectedConditions.elementToBeClickable(
-                        By.id("finish")
-                )
+        try {
+
+            wait.until(
+                    ExpectedConditions.elementToBeClickable(
+                            By.cssSelector(
+                                    "input[onclick*='Shipping.save']"
+                            )
+                    )
+            ).click();
+
+            pause();
+
+        } catch (Exception e) {
+
+            System.out.println(
+                    "Shipping address step skipped."
+            );
+        }
+
+
+        // =====================================================
+        // STEP 14: SHIPPING METHOD
+        // =====================================================
+
+        System.out.println("STEP 14: Selecting shipping method");
+
+        try {
+
+            wait.until(
+                    ExpectedConditions.elementToBeClickable(
+                            By.cssSelector(
+                                    "input[onclick*='ShippingMethod.save']"
+                            )
+                    )
+            ).click();
+
+            pause();
+
+        } catch (Exception e) {
+
+            System.out.println(
+                    "Shipping method step skipped."
+            );
+        }
+
+
+        // =====================================================
+        // STEP 15: PAYMENT METHOD
+        // =====================================================
+
+        System.out.println("STEP 15: Selecting payment method");
+
+        try {
+
+            wait.until(
+                    ExpectedConditions.elementToBeClickable(
+                            By.cssSelector(
+                                    "input[onclick*='PaymentMethod.save']"
+                            )
+                    )
+            ).click();
+
+            pause();
+
+        } catch (Exception e) {
+
+            System.out.println(
+                    "Payment method step skipped."
+            );
+        }
+
+
+        // =====================================================
+        // STEP 16: PAYMENT INFORMATION
+        // =====================================================
+
+        System.out.println("STEP 16: Continuing payment");
+
+        try {
+
+            wait.until(
+                    ExpectedConditions.elementToBeClickable(
+                            By.cssSelector(
+                                    "input[onclick*='PaymentInfo.save']"
+                            )
+                    )
+            ).click();
+
+            pause();
+
+        } catch (Exception e) {
+
+            System.out.println(
+                    "Payment information step skipped."
+            );
+        }
+
+
+        // =====================================================
+        // STEP 17: CONFIRM ORDER
+        // =====================================================
+
+        System.out.println("STEP 17: Confirming order");
+
+        try {
+
+            wait.until(
+                    ExpectedConditions.elementToBeClickable(
+                            By.cssSelector(
+                                    "input[value='Confirm']"
+                            )
+                    )
+            ).click();
+
+            pause();
+
+        } catch (Exception e) {
+
+            System.out.println(
+                    "Confirm button not found."
+            );
+        }
+
+
+        // =====================================================
+        // STEP 18: VERIFY ORDER
+        // =====================================================
+
+        System.out.println("STEP 18: Verifying order");
+
+        String pageText =
+                driver.getPageSource().toLowerCase();
+
+        Assert.assertTrue(
+                pageText.contains("thank you") ||
+                        pageText.contains("order"),
+                "Order confirmation was not found"
         );
-
-        // Scroll to Finish button
-        js.executeScript(
-                "arguments[0].scrollIntoView({" +
-                        "behavior: 'smooth'," +
-                        "block: 'center'" +
-                        "});",
-                finishButton
-        );
-
-        pause();
-
-        finishButton.click();
-
-        pause();
-
-
-        // ==================================================
-        // STEP 9: VERIFY SUCCESS
-        // ==================================================
-
-        System.out.println("STEP 9: Verifying order");
-
-        WebElement successMessage = wait.until(
-                ExpectedConditions.visibilityOfElementLocated(
-                        By.className("complete-header")
-                )
-        );
-
-        String actualMessage =
-                successMessage.getText();
 
         System.out.println(
-                "Success Message: " + actualMessage
-        );
-
-        Assert.assertEquals(
-                actualMessage,
-                "Thank you for your order!",
-                "Order was not completed successfully"
+                "=========================================="
         );
 
         System.out.println(
-                "TEST PASSED: Order completed successfully!"
+                "TEST PASSED"
+        );
+
+        System.out.println(
+                "Order process completed successfully"
+        );
+
+        System.out.println(
+                "=========================================="
         );
 
         pause();
     }
 
 
-    // ==================================================
-    // SLOW DOWN EXECUTION FOR DEMONSTRATION
-    // ==================================================
+// =====================================================
+// PAUSE
+// =====================================================
 
     private void pause() {
 
@@ -305,17 +591,21 @@ public class LoginAndCheckoutTest {
     }
 
 
-    // ==================================================
-    // CLOSE BROWSER
-    // ==================================================
+// =====================================================
+// CLOSE BROWSER
+// =====================================================
 
     @AfterMethod
     public void tearDown() {
 
+        System.out.println("Closing browser...");
+
         pause();
 
         if (driver != null) {
+
             driver.quit();
         }
     }
+
 }

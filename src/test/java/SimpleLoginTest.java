@@ -38,7 +38,7 @@ public class SimpleLoginTest {
 
         // 9. Wait so we can see the result
         try {
-            Thread.sleep(3000);
+            Thread.sleep(5000);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
